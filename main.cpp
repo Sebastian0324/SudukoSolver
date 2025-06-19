@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "Sudoku.hpp"
+#include "Sudoku.cpp"
 
 #define functionArrayLength 9
 
