@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SUDOKU
+#define SUDOKU
 #include <iostream>
 
 /// @brief returns a string reprisentation off the first "length" bits off the number
@@ -207,7 +208,7 @@ private:
     void setLogic(TileSet* set[]) {
         TileSet* poss;
         Tile* matchingSets[6];
-        int setSize = 0;
+        int setSize;
 
         int openTiles = 0;
         int n;
@@ -216,14 +217,22 @@ private:
             // go throu all 9 iterations of the set
             for (int j = 0; j < 9; j++)
             {
+                setSize = 0;
+                for (int index = 0; index < 6; index++)
+                {
+                    matchingSets[index] = nullptr;
+                }
+                
                 // if its looking for groups biger then posible, or of none helping size, skip
                 openTiles = NrOffOnes(set[j]->flags);
-                if (openTiles >= i );
+
+                // if tiles is smaller or equal to the size off set, it is not 
+                if (openTiles <= i )
                     continue;
 
                 // find isolated tiles
                 // if {1,2} {1,3} {2,3} then 1,2,3 must be in those tiles
-                for (int k = 0; k < openTiles; k++)
+                for (int k = 0; k < 9; k++)
                 {
                     // if you are looking for groups bigger then tiles left, break
                     if (k + i > 9)
@@ -239,17 +248,40 @@ private:
                     if (NrOffOnes(n) > i)
                         continue;
                     
-                    matchingSets[setSize++] = set[j]->set[k];
+                    matchingSets[0] = set[j]->set[k];
+                    setSize = 1;
                     // this may overlook some groups, see:
                     // i = 3, {1,2} {1,3} {1,2,4} {1,2,4}
                     // the group off {1,2,4} is missed
                     for (int l = k + 1; l < 9; l++)
                     {
-                        if (NrOffOnes((n & set[j]->set[l]->flags)) > i)
+                        // if the tile is not open, ignor it
+                        if (set[j]->set[l]->number != 0)
+                            continue;
+
+                        if (NrOffOnes((n | set[j]->set[l]->flags)) > i)
                             continue;
                         
-                        n &= set[j]->set[l]->flags;
+                        n |= set[j]->set[l]->flags;
                         matchingSets[setSize++] = set[j]->set[l];
+
+                        if (setSize >= i)
+                        {
+                            int _index = 0;
+                            for (int remove = 0; remove < 9; remove++)
+                            {
+                                if (set[j]->set[remove]->number != 0)
+                                    continue;
+                                if (set[j]->set[remove] == matchingSets[_index])
+                                {
+                                    _index++;
+                                    continue;
+                                }
+                                set[j]->set[remove]->flags &= ~n;
+                            }
+                            break;
+                        }
+                        
                     }
                     
                 }
@@ -360,7 +392,9 @@ public:
         rowLogic(row);
         rowLogic(colum);
 
-        // setLogic(row);
+        setLogic(row);
+        setLogic(colum);
+        setLogic(chunk);
     }
 
     /// @brief outputs all tiles index: number | flags
@@ -477,3 +511,5 @@ public:
         }
     }
 };
+
+#endif
